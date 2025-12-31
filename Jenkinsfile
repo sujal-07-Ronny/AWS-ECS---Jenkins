@@ -9,6 +9,16 @@ pipeline {
 
     stages {
 
+        stage('Install AWS CLI') {
+            steps {
+                sh '''
+                if ! command -v aws >/dev/null 2>&1; then
+                  apt update && apt install -y awscli
+                fi
+                '''
+            }
+        }
+
         stage('Deploy to ECS Fargate') {
             steps {
                 withCredentials([
