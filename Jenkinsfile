@@ -19,7 +19,22 @@ pipeline {
             }
         }
 
-        stage('Deploy to ECS Fargate') {
+        stage('Register Task Definition') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    sh '''
+                    aws ecs register-task-definition \
+                      --cli-input-json file://aws/task-definition.json \
+                      --region $AWS_REGION
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to ECS Service') {
             steps {
                 withCredentials([
                     string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'),
@@ -39,7 +54,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ ECS deployment triggered successfully (us-east-1)"
+            echo "✅ ECS deployment completed successfully"
         }
         failure {
             echo "❌ ECS deployment failed"
